@@ -7,13 +7,14 @@ import os
 
 app = FastAPI(title="Toy Wizard API")
 
-# Enable CORS for all origins
+# Enable CORS for all origins - specifically for PWA
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],  # Allow all origins for now
+    allow_credentials=False,  # Set to False for wildcard origins
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 @app.get("/")
