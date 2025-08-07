@@ -1,0 +1,47 @@
+FROM python:3.11-slim
+
+# Metadata
+LABEL maintainer="ToyResaleWizard Security Team"
+LABEL version="2.0"
+LABEL description="Secure ML model downloader for ToyResaleWizard"
+
+WORKDIR /app
+
+# Security: Install only necessary packages and clean up
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/archives/*
+
+# Security: Create non-root user
+RUN groupadd --gid 1000 modeluser && \
+    useradd --uid 1000 --gid 1000 --create-home --no-log-init --shell /bin/false modeluser
+
+# Copy model download script with proper ownership
+COPY --chown=modeluser:modeluser download_models.py .
+
+# Install required Python packages with version pinning for security
+RUN pip install --no-cache-dir --upgrade pip==23.3.1 && \
+    pip install --no-cache-dir \
+        requests==2.31.0 \
+        torch==2.1.0 \
+        torchvision==0.16.0 \
+        ultralytics==8.0.200 \
+        && pip cache purge
+
+# Create models directory with proper permissions
+RUN mkdir -p /app/models && \
+    chown -R modeluser:modeluser /app && \
+    chmod 755 /app/models
+
+# Security: Switch to non-root user
+USER modeluser
+
+# Security: Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# The script will be run by docker-compose
+ENTRYPOINT ["python", "download_models.py"]
