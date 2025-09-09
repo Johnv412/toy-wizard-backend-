@@ -89,35 +89,56 @@ def download_yolo_manual(model_dir: Path):
         logger.error(f"❌ Failed to download YOLOv8 model manually: {str(e)}")
         return False
 
+def download_clip_direct(model_dir: Path):
+    """Download CLIP model files directly from Hugging Face"""
+    try:
+        import requests
+        import json
+
+        # CLIP model files from Hugging Face
+        base_url = "https://huggingface.co/openai/clip-vit-base-patch32/resolve/main"
+        files_to_download = [
+            "pytorch_model.bin",
+            "config.json",
+            "preprocessor_config.json"
+        ]
+
+        for file_name in files_to_download:
+            url = f"{base_url}/{file_name}"
+            logger.info(f"Downloading {file_name}...")
+            
+            response = requests.get(url, stream=True)
+            response.raise_for_status()
+            
+            file_path = model_dir / file_name
+            with open(file_path, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            
+            logger.info(f"✅ Downloaded {file_name}")
+
+        # Save model config
+        config_path = model_dir / "model_config.json"
+        with open(config_path, 'w') as f:
+            json.dump({
+                "model_type": "clip",
+                "model_name": "ViT-B-32",
+                "source": "openai/clip-vit-base-patch32"
+            }, f)
+
+        logger.info(f"✅ CLIP model downloaded to {model_dir}")
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ Failed to download CLIP model directly: {str(e)}")
+        return False
+
 def download_clip_model(model_dir: Path):
     """Download CLIP model"""
     try:
-        import open_clip
-        logger.info("Downloading CLIP ViT-B/32 model...")
-
-        # Load model (this downloads if not cached)
-        model, _, preprocess = open_clip.create_model_and_transforms(
-            'ViT-B-32',
-            pretrained='laion2b_s34b_b79k'
-        )
-
-        # Save model state dict
-        model_path = model_dir / "clip_vit_b_32.pth"
-        import torch
-        torch.save(model.state_dict(), model_path)
-
-        # Save preprocess config
-        config_path = model_dir / "preprocess_config.json"
-        import json
-        with open(config_path, 'w') as f:
-            json.dump({"model": "ViT-B-32", "pretrained": "laion2b_s34b_b79k"}, f)
-
-        logger.info(f"✅ CLIP model saved to {model_path}")
-        return True
-
-    except ImportError:
-        logger.warning("open_clip not installed, trying transformers...")
-        return download_clip_transformers(model_dir)
+        # Try simple download first to avoid library issues
+        logger.info("Downloading CLIP ViT-B/32 model files directly...")
+        return download_clip_direct(model_dir)
     except Exception as e:
         logger.error(f"❌ Failed to download CLIP model: {str(e)}")
         return False

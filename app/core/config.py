@@ -33,8 +33,8 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     
     # ML Models
-    YOLO_MODEL_PATH: str = "./models/yolov8n.pt"
-    CLIP_MODEL_NAME: str = "ViT-B/32"
+    YOLO_MODEL_PATH: str = "./app/ml_models/yolov8n_v1_20250909_181453/yolov8n.pt"
+    CLIP_MODEL_NAME: str = "./app/ml_models/clip_vit_b_32_v1_20250909_181454"
     
     # External APIs
     EBAY_APP_ID: str = ""
