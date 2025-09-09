@@ -1241,3 +1241,29 @@ WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind 
 2025-09-09 18:09:25,582 - __main__ - INFO - 🔍 Starting Redis connection and caching verification...
 2025-09-09 18:09:25,587 - __main__ - ERROR - ❌ Redis connection failed: AUTH <password> called without any password configured for the default user. Are you sure your configuration is correct?
 2025-09-09 18:09:25,588 - __main__ - ERROR - 💥 Redis verification failed - connection issues
+2025-09-09 18:09:44,320 - __main__ - INFO - 🔍 Starting Redis connection and caching verification...
+2025-09-09 18:09:44,325 - __main__ - INFO - ✅ Redis connection successful
+2025-09-09 18:09:44,326 - __main__ - INFO - ✅ Redis SET operation successful
+2025-09-09 18:09:44,326 - __main__ - INFO - ✅ Redis GET operation successful
+2025-09-09 18:09:46,328 - __main__ - INFO - ✅ Redis TTL working (expires in 58s)
+2025-09-09 18:09:46,329 - __main__ - INFO - ✅ Redis cache SET with JSON successful
+2025-09-09 18:09:46,330 - __main__ - INFO - ✅ Redis cache GET and JSON parsing successful
+2025-09-09 18:09:46,331 - __main__ - INFO - ✅ Redis key pattern matching successful
+2025-09-09 18:09:46,332 - __main__ - INFO - ✅ Test data cleanup successful
+2025-09-09 18:09:46,332 - __main__ - INFO - 🎉 Redis setup verification completed successfully!
+2025-09-09 18:09:46,333 - __main__ - INFO - ✅ Redis connection: OK
+2025-09-09 18:09:46,333 - __main__ - INFO - ✅ Basic operations: OK
+2025-09-09 18:09:46,333 - __main__ - INFO - ✅ Caching functionality: OK
+2025-09-09 18:10:36,160 - __main__ - INFO - 🔍 Starting Redis connection and caching verification...
+2025-09-09 18:10:36,165 - __main__ - INFO - ✅ Redis connection successful
+2025-09-09 18:10:36,166 - __main__ - INFO - ✅ Redis SET operation successful
+2025-09-09 18:10:36,166 - __main__ - INFO - ✅ Redis GET operation successful
+2025-09-09 18:10:38,167 - __main__ - INFO - ✅ Redis TTL working (expires in 58s)
+2025-09-09 18:10:38,167 - __main__ - INFO - ✅ Redis cache SET with JSON successful
+2025-09-09 18:10:38,167 - __main__ - INFO - ✅ Redis cache GET and JSON parsing successful
+2025-09-09 18:10:38,168 - __main__ - INFO - ✅ Redis key pattern matching successful
+2025-09-09 18:10:38,168 - __main__ - INFO - ✅ Test data cleanup successful
+2025-09-09 18:10:38,168 - __main__ - INFO - 🎉 Redis setup verification completed successfully!
+2025-09-09 18:10:38,168 - __main__ - INFO - ✅ Redis connection: OK
+2025-09-09 18:10:38,168 - __main__ - INFO - ✅ Basic operations: OK
+2025-09-09 18:10:38,168 - __main__ - INFO - ✅ Caching functionality: OK

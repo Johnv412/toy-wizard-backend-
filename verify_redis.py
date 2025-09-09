@@ -36,26 +36,38 @@ TEST_CACHE_VALUE = {
 async def check_redis_connection():
     """Test basic Redis connection"""
     try:
-        # Initialize Redis client
-        if hasattr(settings, 'REDIS_URL'):
-            redis_client = redis.Redis.from_url(
-                settings.REDIS_URL,
-                encoding='utf-8',
-                decode_responses=True,
-                max_connections=5
-            )
-        else:
-            logger.error("❌ REDIS_URL not configured in settings")
-            return False
+        # Try direct connection first (bypass URL parsing issues)
+        redis_client = redis.Redis(
+            host='localhost',
+            port=6379,
+            db=0,
+            encoding='utf-8',
+            decode_responses=True,
+            max_connections=5
+        )
 
         # Test connection with ping
         pong = await redis_client.ping()
         if pong:
             logger.info("✅ Redis connection successful")
             return redis_client
-        else:
-            logger.error("❌ Redis ping failed")
-            return False
+
+        # Fallback to URL if direct connection fails
+        if hasattr(settings, 'REDIS_URL'):
+            logger.info("Trying URL-based connection...")
+            redis_client = redis.Redis.from_url(
+                settings.REDIS_URL,
+                encoding='utf-8',
+                decode_responses=True,
+                max_connections=5
+            )
+            pong = await redis_client.ping()
+            if pong:
+                logger.info("✅ Redis connection successful (URL method)")
+                return redis_client
+
+        logger.error("❌ Redis ping failed")
+        return False
 
     except Exception as e:
         logger.error(f"❌ Redis connection failed: {str(e)}")
