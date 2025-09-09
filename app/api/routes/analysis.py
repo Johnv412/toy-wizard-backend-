@@ -20,6 +20,7 @@ from app.core.security import validate_image_file, generate_secure_filename
 from app.services.ml_service_simple import MLService, get_ml_orchestrator
 from app.services.pricing_service import PricingService
 from app.services.cache_warmer import CacheWarmer
+from app.services.ai_service import ai_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -121,23 +122,27 @@ async def analyze_toy(
             # Get optimized pricing service
             optimized_pricing_service = await get_pricing_service()
             
+            # Convert image to base64 for AI service
+            import base64
+            image_base64 = base64.b64encode(content).decode('utf-8')
+
             # Create parallel tasks
-            ml_task = asyncio.create_task(
-                ml_service.analyze_toy_image(content)
+            ai_task = asyncio.create_task(
+                ai_service.analyze_toy_image(image_base64)
             )
-            
-            # Start basic pricing with default category while ML processes
+
+            # Start basic pricing with default category while AI processes
             basic_pricing_task = asyncio.create_task(
                 optimized_pricing_service.get_price_estimate_optimized(
-                    toy_name="unknown",  # Will be updated with ML results
+                    toy_name="unknown",  # Will be updated with AI results
                     category="other",    # Default category
                     condition_score=7.0, # Default condition
                     brand=None
                 )
             )
-            
-            # Wait for ML analysis to complete
-            analysis_result = await ml_task
+
+            # Wait for AI analysis to complete
+            analysis_result = await ai_task
         
         except Exception as e:
             logger.error(f"Analysis failed: {str(e)}")
@@ -208,22 +213,31 @@ async def analyze_toy(
             'image_id': secure_filename.split('.')[0],
             'analysis_id': str(uuid.uuid4()),
             'performance_metrics': {
-                'ml_processing_time': processing_time,
+                'ai_processing_time': processing_time,
                 'pricing_cache_status': cache_status,
-                'total_api_calls': 2,  # ML + Pricing
+                'total_api_calls': 2,  # AI + Pricing
                 'optimization_used': 'parallel_execution'
             }
         }
         
         # Store analysis in database with async session
         try:
+            # Map AI service fields to database model
+            rarity_mapping = {
+                'common': 3.0,
+                'uncommon': 5.0,
+                'rare': 7.0,
+                'very_rare': 8.0,
+                'collectible': 9.0
+            }
+
             toy_analysis = ToyAnalysis(
                 toy_name=analysis_result['toy_name'],
                 category=analysis_result['category'],
                 brand=analysis_result.get('brand'),
                 condition_score=analysis_result['condition_score'],
                 estimated_price=pricing_result['estimated_price'],
-                rarity_score=analysis_result.get('rarity_score', 5.0),
+                rarity_score=rarity_mapping.get(analysis_result.get('rarity', 'uncommon'), 5.0),
                 confidence=analysis_result['confidence'],
                 image_path=image_path,
                 analysis_data=str(final_result)
