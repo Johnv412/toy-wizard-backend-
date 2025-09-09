@@ -17,15 +17,21 @@ elif async_db_url.startswith("postgresql"):
     async_db_url = async_db_url.replace("postgresql://", "postgresql+asyncpg://")
 
 # Async database setup with connection pooling
-engine = create_async_engine(
-    async_db_url,
-    echo=settings.DEBUG,
-    pool_size=20,
-    max_overflow=30,
-    pool_pre_ping=True,
-    pool_recycle=3600,
-    connect_args={"check_same_thread": False} if "sqlite" in async_db_url else {}
-)
+if "sqlite" in async_db_url:
+    engine = create_async_engine(
+        async_db_url,
+        echo=settings.DEBUG,
+        connect_args={"check_same_thread": False}
+    )
+else:
+    engine = create_async_engine(
+        async_db_url,
+        echo=settings.DEBUG,
+        pool_size=20,
+        max_overflow=30,
+        pool_pre_ping=True,
+        pool_recycle=3600
+    )
 
 AsyncSessionLocal = sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
