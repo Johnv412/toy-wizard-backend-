@@ -884,3 +884,345 @@ WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind 
 2025-08-07 13:58:53,948 - app.services.ml_service_simple - INFO - MLService models initialized (development mode)
 2025-08-07 13:58:53,948 - main - INFO - Initializing pricing service...
 2025-08-07 13:58:53,948 - main - INFO - Application startup complete
+2025-09-09 15:56:52,728 - main - ERROR - Startup failed: [Errno 61] Connection refused
+2025-09-09 15:56:52,729 - main - INFO - Shutting down application...
+2025-09-09 15:56:52,788 - watchfiles.main - INFO - 3 changes detected
+2025-09-09 15:56:53,149 - watchfiles.main - INFO - 1 change detected
+2025-09-09 15:58:52,142 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-09 15:58:52,143 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("toy_analyses")
+2025-09-09 15:58:52,143 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:58:52,144 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("toy_analyses")
+2025-09-09 15:58:52,144 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:58:52,145 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("price_history")
+2025-09-09 15:58:52,145 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:58:52,145 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("price_history")
+2025-09-09 15:58:52,145 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:58:52,146 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user_sessions")
+2025-09-09 15:58:52,146 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:58:52,146 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("user_sessions")
+2025-09-09 15:58:52,146 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:58:52,147 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("ml_model_metrics")
+2025-09-09 15:58:52,147 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:58:52,147 - sqlalchemy.engine.Engine - INFO - PRAGMA temp.table_info("ml_model_metrics")
+2025-09-09 15:58:52,147 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:58:52,148 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE toy_analyses (
+	id INTEGER NOT NULL, 
+	toy_name VARCHAR, 
+	category VARCHAR, 
+	brand VARCHAR, 
+	condition_score FLOAT, 
+	estimated_price FLOAT, 
+	rarity_score FLOAT, 
+	confidence FLOAT, 
+	image_path VARCHAR, 
+	analysis_data TEXT, 
+	created_at DATETIME, 
+	updated_at DATETIME, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-09 15:58:52,149 - sqlalchemy.engine.Engine - INFO - [no key 0.00013s] ()
+2025-09-09 15:58:52,151 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_toy_analyses_toy_name ON toy_analyses (toy_name)
+2025-09-09 15:58:52,152 - sqlalchemy.engine.Engine - INFO - [no key 0.00017s] ()
+2025-09-09 15:58:52,154 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_toy_analyses_id ON toy_analyses (id)
+2025-09-09 15:58:52,154 - sqlalchemy.engine.Engine - INFO - [no key 0.00015s] ()
+2025-09-09 15:58:52,156 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_toy_analyses_category ON toy_analyses (category)
+2025-09-09 15:58:52,156 - sqlalchemy.engine.Engine - INFO - [no key 0.00014s] ()
+2025-09-09 15:58:52,158 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE price_history (
+	id INTEGER NOT NULL, 
+	toy_name VARCHAR, 
+	source VARCHAR, 
+	price FLOAT, 
+	condition VARCHAR, 
+	sold_date DATETIME, 
+	listing_url VARCHAR, 
+	created_at DATETIME, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-09 15:58:52,158 - sqlalchemy.engine.Engine - INFO - [no key 0.00015s] ()
+2025-09-09 15:58:52,160 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_price_history_id ON price_history (id)
+2025-09-09 15:58:52,160 - sqlalchemy.engine.Engine - INFO - [no key 0.00013s] ()
+2025-09-09 15:58:52,162 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_price_history_toy_name ON price_history (toy_name)
+2025-09-09 15:58:52,162 - sqlalchemy.engine.Engine - INFO - [no key 0.00013s] ()
+2025-09-09 15:58:52,164 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE user_sessions (
+	id INTEGER NOT NULL, 
+	session_id VARCHAR, 
+	analyses_count INTEGER, 
+	total_value FLOAT, 
+	created_at DATETIME, 
+	last_activity DATETIME, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-09 15:58:52,164 - sqlalchemy.engine.Engine - INFO - [no key 0.00016s] ()
+2025-09-09 15:58:52,166 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_user_sessions_id ON user_sessions (id)
+2025-09-09 15:58:52,166 - sqlalchemy.engine.Engine - INFO - [no key 0.00014s] ()
+2025-09-09 15:58:52,168 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_user_sessions_session_id ON user_sessions (session_id)
+2025-09-09 15:58:52,168 - sqlalchemy.engine.Engine - INFO - [no key 0.00012s] ()
+2025-09-09 15:58:52,170 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE ml_model_metrics (
+	id INTEGER NOT NULL, 
+	model_name VARCHAR, 
+	accuracy FLOAT, 
+	precision FLOAT, 
+	recall FLOAT, 
+	f1_score FLOAT, 
+	total_predictions INTEGER, 
+	correct_predictions INTEGER, 
+	created_at DATETIME, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-09 15:58:52,170 - sqlalchemy.engine.Engine - INFO - [no key 0.00013s] ()
+2025-09-09 15:58:52,171 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_ml_model_metrics_id ON ml_model_metrics (id)
+2025-09-09 15:58:52,172 - sqlalchemy.engine.Engine - INFO - [no key 0.00012s] ()
+2025-09-09 15:58:52,173 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-09 15:58:52,174 - main - INFO - Initializing global MLOrchestrator...
+2025-09-09 15:58:52,174 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 15:58:52,174 - main - INFO - Initializing ML service...
+2025-09-09 15:58:52,174 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 15:58:52,174 - app.services.ml_service_simple - INFO - MLService models initialized (development mode)
+2025-09-09 15:58:52,174 - main - INFO - Initializing pricing service...
+2025-09-09 15:58:52,174 - main - INFO - Application startup complete
+2025-09-09 15:58:52,223 - watchfiles.main - INFO - 3 changes detected
+2025-09-09 15:59:20,199 - main - INFO - Shutting down application...
+2025-09-09 15:59:20,201 - main - INFO - Cleaning up MLOrchestrator...
+2025-09-09 15:59:20,201 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 15:59:20,201 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 15:59:50,778 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-09 15:59:50,778 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("toy_analyses")
+2025-09-09 15:59:50,778 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:59:50,781 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("price_history")
+2025-09-09 15:59:50,781 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:59:50,782 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user_sessions")
+2025-09-09 15:59:50,782 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:59:50,782 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("ml_model_metrics")
+2025-09-09 15:59:50,782 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 15:59:50,783 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-09 15:59:50,783 - main - INFO - Initializing global MLOrchestrator...
+2025-09-09 15:59:50,784 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 15:59:50,784 - main - INFO - Initializing ML service...
+2025-09-09 15:59:50,784 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 15:59:50,784 - app.services.ml_service_simple - INFO - MLService models initialized (development mode)
+2025-09-09 15:59:50,784 - main - INFO - Initializing pricing service...
+2025-09-09 15:59:50,784 - main - INFO - Application startup complete
+2025-09-09 16:00:21,135 - app.core.middleware - INFO - GET http://localhost:8000/api/health - 404 - 0.000s
+2025-09-09 16:00:27,762 - app.core.middleware - INFO - GET http://localhost:8000/api/health/health - 200 - 0.000s
+2025-09-09 16:07:13,744 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-09 16:07:13,745 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("toy_analyses")
+2025-09-09 16:07:13,745 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:07:13,748 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("price_history")
+2025-09-09 16:07:13,748 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:07:13,748 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user_sessions")
+2025-09-09 16:07:13,749 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:07:13,749 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("ml_model_metrics")
+2025-09-09 16:07:13,749 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:07:13,750 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-09 16:07:13,751 - main - INFO - Initializing global MLOrchestrator...
+2025-09-09 16:07:13,751 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 16:07:13,751 - main - INFO - Initializing ML service...
+2025-09-09 16:07:13,751 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 16:07:13,751 - app.services.ml_service_simple - INFO - MLService models initialized (development mode)
+2025-09-09 16:07:13,751 - main - INFO - Initializing pricing service...
+2025-09-09 16:07:13,751 - main - INFO - Application startup complete
+2025-09-09 16:07:41,369 - main - INFO - Shutting down application...
+2025-09-09 16:07:41,372 - main - INFO - Cleaning up MLOrchestrator...
+2025-09-09 16:07:41,372 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 16:07:41,372 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 16:07:58,790 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-09 16:07:58,790 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("toy_analyses")
+2025-09-09 16:07:58,790 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:07:58,791 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("price_history")
+2025-09-09 16:07:58,791 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:07:58,792 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("user_sessions")
+2025-09-09 16:07:58,792 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:07:58,793 - sqlalchemy.engine.Engine - INFO - PRAGMA main.table_info("ml_model_metrics")
+2025-09-09 16:07:58,793 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:07:58,793 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-09 16:07:58,794 - main - INFO - Initializing global MLOrchestrator...
+2025-09-09 16:07:58,794 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 16:07:58,794 - main - INFO - Initializing ML service...
+2025-09-09 16:07:58,794 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 16:07:58,794 - app.services.ml_service_simple - INFO - MLService models initialized (development mode)
+2025-09-09 16:07:58,794 - main - INFO - Initializing pricing service...
+2025-09-09 16:07:58,794 - main - INFO - Application startup complete
+2025-09-09 16:08:26,218 - main - INFO - Shutting down application...
+2025-09-09 16:08:26,218 - main - INFO - Cleaning up MLOrchestrator...
+2025-09-09 16:08:26,218 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 16:08:26,218 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 16:08:44,094 - main - ERROR - Startup failed: role "postgres" does not exist
+2025-09-09 16:08:44,095 - main - INFO - Shutting down application...
+2025-09-09 16:08:44,357 - watchfiles.main - INFO - 1 change detected
+2025-09-09 16:09:21,287 - sqlalchemy.engine.Engine - INFO - select pg_catalog.version()
+2025-09-09 16:09:21,288 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:09:21,291 - sqlalchemy.engine.Engine - INFO - select current_schema()
+2025-09-09 16:09:21,292 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:09:21,293 - sqlalchemy.engine.Engine - INFO - show standard_conforming_strings
+2025-09-09 16:09:21,293 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:09:21,294 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-09 16:09:21,297 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-09-09 16:09:21,297 - sqlalchemy.engine.Engine - INFO - [generated in 0.00019s] ('toy_analyses', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-09-09 16:09:21,305 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-09-09 16:09:21,305 - sqlalchemy.engine.Engine - INFO - [cached since 0.008198s ago] ('price_history', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-09-09 16:09:21,306 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-09-09 16:09:21,306 - sqlalchemy.engine.Engine - INFO - [cached since 0.008668s ago] ('user_sessions', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-09-09 16:09:21,306 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-09-09 16:09:21,306 - sqlalchemy.engine.Engine - INFO - [cached since 0.00909s ago] ('ml_model_metrics', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-09-09 16:09:21,307 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE toy_analyses (
+	id SERIAL NOT NULL, 
+	toy_name VARCHAR, 
+	category VARCHAR, 
+	brand VARCHAR, 
+	condition_score FLOAT, 
+	estimated_price FLOAT, 
+	rarity_score FLOAT, 
+	confidence FLOAT, 
+	image_path VARCHAR, 
+	analysis_data TEXT, 
+	created_at TIMESTAMP WITHOUT TIME ZONE, 
+	updated_at TIMESTAMP WITHOUT TIME ZONE, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-09 16:09:21,307 - sqlalchemy.engine.Engine - INFO - [no key 0.00011s] ()
+2025-09-09 16:09:21,324 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_toy_analyses_toy_name ON toy_analyses (toy_name)
+2025-09-09 16:09:21,324 - sqlalchemy.engine.Engine - INFO - [no key 0.00011s] ()
+2025-09-09 16:09:21,325 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_toy_analyses_id ON toy_analyses (id)
+2025-09-09 16:09:21,325 - sqlalchemy.engine.Engine - INFO - [no key 0.00010s] ()
+2025-09-09 16:09:21,326 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_toy_analyses_category ON toy_analyses (category)
+2025-09-09 16:09:21,326 - sqlalchemy.engine.Engine - INFO - [no key 0.00009s] ()
+2025-09-09 16:09:21,327 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE price_history (
+	id SERIAL NOT NULL, 
+	toy_name VARCHAR, 
+	source VARCHAR, 
+	price FLOAT, 
+	condition VARCHAR, 
+	sold_date TIMESTAMP WITHOUT TIME ZONE, 
+	listing_url VARCHAR, 
+	created_at TIMESTAMP WITHOUT TIME ZONE, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-09 16:09:21,327 - sqlalchemy.engine.Engine - INFO - [no key 0.00011s] ()
+2025-09-09 16:09:21,330 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_price_history_id ON price_history (id)
+2025-09-09 16:09:21,330 - sqlalchemy.engine.Engine - INFO - [no key 0.00010s] ()
+2025-09-09 16:09:21,331 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_price_history_toy_name ON price_history (toy_name)
+2025-09-09 16:09:21,331 - sqlalchemy.engine.Engine - INFO - [no key 0.00009s] ()
+2025-09-09 16:09:21,332 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE user_sessions (
+	id SERIAL NOT NULL, 
+	session_id VARCHAR, 
+	analyses_count INTEGER, 
+	total_value FLOAT, 
+	created_at TIMESTAMP WITHOUT TIME ZONE, 
+	last_activity TIMESTAMP WITHOUT TIME ZONE, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-09 16:09:21,332 - sqlalchemy.engine.Engine - INFO - [no key 0.00012s] ()
+2025-09-09 16:09:21,334 - sqlalchemy.engine.Engine - INFO - CREATE UNIQUE INDEX ix_user_sessions_session_id ON user_sessions (session_id)
+2025-09-09 16:09:21,334 - sqlalchemy.engine.Engine - INFO - [no key 0.00011s] ()
+2025-09-09 16:09:21,335 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_user_sessions_id ON user_sessions (id)
+2025-09-09 16:09:21,336 - sqlalchemy.engine.Engine - INFO - [no key 0.00017s] ()
+2025-09-09 16:09:21,337 - sqlalchemy.engine.Engine - INFO - 
+CREATE TABLE ml_model_metrics (
+	id SERIAL NOT NULL, 
+	model_name VARCHAR, 
+	accuracy FLOAT, 
+	precision FLOAT, 
+	recall FLOAT, 
+	f1_score FLOAT, 
+	total_predictions INTEGER, 
+	correct_predictions INTEGER, 
+	created_at TIMESTAMP WITHOUT TIME ZONE, 
+	PRIMARY KEY (id)
+)
+
+
+2025-09-09 16:09:21,338 - sqlalchemy.engine.Engine - INFO - [no key 0.00025s] ()
+2025-09-09 16:09:21,342 - sqlalchemy.engine.Engine - INFO - CREATE INDEX ix_ml_model_metrics_id ON ml_model_metrics (id)
+2025-09-09 16:09:21,342 - sqlalchemy.engine.Engine - INFO - [no key 0.00023s] ()
+2025-09-09 16:09:21,343 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-09 16:09:21,345 - main - INFO - Initializing global MLOrchestrator...
+2025-09-09 16:09:21,345 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 16:09:21,345 - main - INFO - Initializing ML service...
+2025-09-09 16:09:21,345 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 16:09:21,345 - app.services.ml_service_simple - INFO - MLService models initialized (development mode)
+2025-09-09 16:09:21,345 - main - INFO - Initializing pricing service...
+2025-09-09 16:09:21,345 - main - INFO - Application startup complete
+2025-09-09 16:09:48,867 - main - INFO - Shutting down application...
+2025-09-09 16:09:48,869 - main - INFO - Cleaning up MLOrchestrator...
+2025-09-09 16:09:48,870 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 16:09:48,870 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 16:10:28,958 - sqlalchemy.engine.Engine - INFO - select pg_catalog.version()
+2025-09-09 16:10:28,959 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:10:28,961 - sqlalchemy.engine.Engine - INFO - select current_schema()
+2025-09-09 16:10:28,961 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:10:28,962 - sqlalchemy.engine.Engine - INFO - show standard_conforming_strings
+2025-09-09 16:10:28,962 - sqlalchemy.engine.Engine - INFO - [raw sql] ()
+2025-09-09 16:10:28,963 - sqlalchemy.engine.Engine - INFO - BEGIN (implicit)
+2025-09-09 16:10:28,967 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-09-09 16:10:28,967 - sqlalchemy.engine.Engine - INFO - [generated in 0.00026s] ('toy_analyses', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-09-09 16:10:28,971 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-09-09 16:10:28,972 - sqlalchemy.engine.Engine - INFO - [cached since 0.004319s ago] ('price_history', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-09-09 16:10:28,972 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-09-09 16:10:28,972 - sqlalchemy.engine.Engine - INFO - [cached since 0.005022s ago] ('user_sessions', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-09-09 16:10:28,973 - sqlalchemy.engine.Engine - INFO - SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind = ANY (ARRAY[$2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != $7::VARCHAR
+2025-09-09 16:10:28,973 - sqlalchemy.engine.Engine - INFO - [cached since 0.00567s ago] ('ml_model_metrics', 'r', 'p', 'f', 'v', 'm', 'pg_catalog')
+2025-09-09 16:10:28,973 - sqlalchemy.engine.Engine - INFO - COMMIT
+2025-09-09 16:10:28,974 - main - INFO - Initializing global MLOrchestrator...
+2025-09-09 16:10:28,974 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 16:10:28,974 - main - INFO - Initializing ML service...
+2025-09-09 16:10:28,974 - app.services.ml_service_simple - INFO - ✅ MLService initialized (development mode)
+2025-09-09 16:10:28,974 - app.services.ml_service_simple - INFO - MLService models initialized (development mode)
+2025-09-09 16:10:28,974 - main - INFO - Initializing pricing service...
+2025-09-09 16:10:28,974 - main - INFO - Application startup complete
+2025-09-09 16:10:56,205 - main - INFO - Shutting down application...
+2025-09-09 16:10:56,208 - main - INFO - Cleaning up MLOrchestrator...
+2025-09-09 16:10:56,208 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 16:10:56,208 - app.services.ml_service_simple - INFO - MLService cleanup completed (development mode)
+2025-09-09 18:03:31,917 - __main__ - INFO - 🔍 Starting PostgreSQL database verification...
+2025-09-09 18:03:31,942 - __main__ - ERROR - ❌ Database connection failed: Not an executable object: 'SELECT 1'
+2025-09-09 18:03:31,942 - __main__ - ERROR - 💥 PostgreSQL setup verification failed!
+2025-09-09 18:03:40,092 - __main__ - INFO - 🔍 Starting PostgreSQL database verification...
+2025-09-09 18:03:40,114 - __main__ - INFO - ✅ Database connection successful
+2025-09-09 18:03:40,115 - __main__ - ERROR - ❌ Failed to check tables: Inspection on an AsyncEngine is currently not supported. Please obtain a connection then use ``conn.run_sync`` to pass a callable where it's possible to call ``inspect`` on the passed connection. (Background on this error at: https://sqlalche.me/e/20/xd3s)
+2025-09-09 18:03:40,115 - __main__ - ERROR - 💥 PostgreSQL setup verification failed!
+2025-09-09 18:03:49,780 - __main__ - INFO - 🔍 Starting PostgreSQL database verification...
+2025-09-09 18:03:49,799 - __main__ - INFO - ✅ Database connection successful
+2025-09-09 18:03:49,807 - __main__ - INFO - Found 4 tables in database
+2025-09-09 18:03:49,807 - __main__ - INFO - ✅ Table 'toy_analyses' exists
+2025-09-09 18:03:49,807 - __main__ - INFO - ✅ Table 'price_history' exists
+2025-09-09 18:03:49,807 - __main__ - INFO - ✅ Table 'user_sessions' exists
+2025-09-09 18:03:49,807 - __main__ - INFO - ✅ Table 'ml_model_metrics' exists
+2025-09-09 18:03:49,807 - __main__ - INFO - ✅ All expected tables are present
+2025-09-09 18:03:49,808 - __main__ - INFO - 🎉 PostgreSQL setup verification completed successfully!
