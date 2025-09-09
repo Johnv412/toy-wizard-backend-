@@ -1,238 +1,182 @@
 #!/usr/bin/env python3
 """
-Secure ML model downloader for ToyResaleWizard
+ML Model Download Script
+Downloads YOLOv8 and CLIP models with versioning
 """
 
 import os
-import sys
-import requests
 import logging
-import hashlib
-import tempfile
+import datetime
 from pathlib import Path
-from typing import Optional, Dict
-import ssl
-import urllib3
 
-logging.basicConfig(level=logging.INFO)
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('app.log'),
+        logging.StreamHandler()
+    ]
+)
+
 logger = logging.getLogger(__name__)
 
-# Model integrity verification data
-MODEL_CHECKSUMS = {
-    "yolov8n.pt": "8c5b5a9a4f5b9c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0",
-    # Add more model checksums as needed
-}
+# Model configurations
+MODELS_DIR = Path("app/ml_models")
+YOLO_MODEL_NAME = "yolov8n"
+CLIP_MODEL_NAME = "ViT-B/32"
 
-# Trusted model sources
-TRUSTED_SOURCES = {
-    "github.com",
-    "pytorch.org", 
-    "huggingface.co",
-    "download.pytorch.org"
-}
+def create_versioned_dir(base_name: str) -> Path:
+    """Create a versioned directory for the model"""
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    version = 1
 
-def verify_url_safety(url: str) -> bool:
-    """Verify URL is from trusted source and uses HTTPS"""
+    while True:
+        dir_name = f"{base_name}_v{version}_{timestamp}"
+        model_dir = MODELS_DIR / dir_name
+        if not model_dir.exists():
+            model_dir.mkdir(parents=True, exist_ok=True)
+            return model_dir
+        version += 1
+
+def download_yolo_model(model_dir: Path):
+    """Download YOLOv8 model"""
     try:
-        from urllib.parse import urlparse
-        parsed = urlparse(url)
-        
-        # Must use HTTPS
-        if parsed.scheme != 'https':
-            logger.error(f"Insecure URL scheme: {parsed.scheme}")
-            return False
-            
-        # Must be from trusted source
-        hostname = parsed.hostname.lower() if parsed.hostname else ""
-        if not any(trusted in hostname for trusted in TRUSTED_SOURCES):
-            logger.error(f"Untrusted source: {hostname}")
-            return False
-            
+        from ultralytics import YOLO
+        logger.info("Downloading YOLOv8n model...")
+
+        # Create YOLO model instance (this downloads the model)
+        model = YOLO(f"{YOLO_MODEL_NAME}.pt")
+
+        # Save the model to our directory
+        model_path = model_dir / f"{YOLO_MODEL_NAME}.pt"
+        model.save(str(model_path))
+
+        logger.info(f"✅ YOLOv8n model saved to {model_path}")
         return True
-        
+
+    except ImportError:
+        logger.warning("ultralytics not installed, downloading manually...")
+        return download_yolo_manual(model_dir)
     except Exception as e:
-        logger.error(f"URL validation failed: {e}")
+        logger.error(f"❌ Failed to download YOLOv8 model: {str(e)}")
         return False
 
-def calculate_file_hash(filepath: str) -> str:
-    """Calculate SHA256 hash of file"""
-    hash_sha256 = hashlib.sha256()
+def download_yolo_manual(model_dir: Path):
+    """Manual download of YOLOv8 model"""
     try:
-        with open(filepath, "rb") as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hash_sha256.update(chunk)
-        return hash_sha256.hexdigest()
-    except Exception as e:
-        logger.error(f"Hash calculation failed: {e}")
-        return ""
+        import requests
+        from urllib.parse import urljoin
 
-def verify_file_integrity(filepath: str, expected_hash: Optional[str] = None) -> bool:
-    """Verify downloaded file integrity"""
-    if not expected_hash:
-        filename = Path(filepath).name
-        expected_hash = MODEL_CHECKSUMS.get(filename)
-        
-    if not expected_hash:
-        logger.warning(f"No checksum available for {filepath}")
-        return True  # Allow download but warn
-        
-    actual_hash = calculate_file_hash(filepath)
-    if actual_hash == expected_hash:
-        logger.info(f"File integrity verified: {filepath}")
-        return True
-    else:
-        logger.error(f"File integrity check failed: {filepath}")
-        logger.error(f"Expected: {expected_hash}")
-        logger.error(f"Actual: {actual_hash}")
-        return False
+        # YOLOv8 model URL (from ultralytics)
+        base_url = "https://github.com/ultralytics/assets/releases/download/v0.0.0/"
+        model_file = f"{YOLO_MODEL_NAME}.pt"
+        url = urljoin(base_url, model_file)
 
-def download_file(url: str, destination: str, expected_hash: Optional[str] = None) -> bool:
-    """Securely download a file from URL to destination with integrity verification"""
-    try:
-        # Verify URL safety first
-        if not verify_url_safety(url):
-            logger.error(f"URL safety check failed: {url}")
-            return False
-            
-        logger.info(f"Downloading {url} to {destination}")
-        
-        # Configure secure session
-        session = requests.Session()
-        session.verify = True  # Always verify SSL certificates
-        session.timeout = (30, 300)  # Connection timeout, read timeout
-        
-        # Set secure headers
-        headers = {
-            'User-Agent': 'ToyResaleWizard-ModelDownloader/1.0',
-            'Accept': 'application/octet-stream',
-        }
-        
-        response = session.get(url, stream=True, headers=headers)
+        logger.info(f"Downloading YOLOv8n from {url}...")
+        response = requests.get(url, stream=True)
         response.raise_for_status()
-        
-        total_size = int(response.headers.get('content-length', 0))
-        downloaded = 0
-        
-        # Use temporary file for atomic download
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            temp_path = temp_file.name
-            
+
+        model_path = model_dir / model_file
+        with open(model_path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    temp_file.write(chunk)
-                    downloaded += len(chunk)
-                    
-                    if total_size > 0:
-                        progress = (downloaded / total_size) * 100
-                        print(f"\rProgress: {progress:.1f}%", end='', flush=True)
-        
-        print()  # New line after progress
-        
-        # Verify file integrity before moving to final location
-        if not verify_file_integrity(temp_path, expected_hash):
-            os.unlink(temp_path)
-            return False
-            
-        # Move verified file to destination
-        os.rename(temp_path, destination)
-        os.chmod(destination, 0o644)  # Set secure permissions
-        
-        logger.info(f"Successfully downloaded and verified {destination}")
+                f.write(chunk)
+
+        logger.info(f"✅ YOLOv8n model downloaded to {model_path}")
         return True
-        
+
     except Exception as e:
-        logger.error(f"Failed to download {url}: {e}")
-        # Clean up temp file if it exists
-        if 'temp_path' in locals() and os.path.exists(temp_path):
-            os.unlink(temp_path)
+        logger.error(f"❌ Failed to download YOLOv8 model manually: {str(e)}")
         return False
 
-def download_yolo_model():
-    """Securely download YOLOv8 model with verification"""
-    models_dir = Path("/app/models")
-    models_dir.mkdir(exist_ok=True, mode=0o755)
-    
-    model_path = models_dir / "yolov8n.pt"
-    
-    if model_path.exists():
-        # Verify existing model integrity
-        if verify_file_integrity(str(model_path)):
-            logger.info(f"YOLOv8 model already exists and verified at {model_path}")
-            return True
-        else:
-            logger.warning("Existing model failed integrity check, re-downloading...")
-            os.unlink(model_path)
-    
-    # YOLOv8 nano model from official Ultralytics GitHub releases
-    url = "https://github.com/ultralytics/assets/releases/download/v8.0.0/yolov8n.pt"
-    expected_hash = MODEL_CHECKSUMS.get("yolov8n.pt")
-    
-    return download_file(url, str(model_path), expected_hash)
-
-def verify_clip_model():
-    """Verify CLIP model can be loaded"""
+def download_clip_model(model_dir: Path):
+    """Download CLIP model"""
     try:
-        import clip
+        import open_clip
+        logger.info("Downloading CLIP ViT-B/32 model...")
+
+        # Load model (this downloads if not cached)
+        model, _, preprocess = open_clip.create_model_and_transforms(
+            'ViT-B-32',
+            pretrained='laion2b_s34b_b79k'
+        )
+
+        # Save model state dict
+        model_path = model_dir / "clip_vit_b_32.pth"
         import torch
-        
-        logger.info("Verifying CLIP model...")
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        model, preprocess = clip.load("ViT-B/32", device=device)
-        logger.info("CLIP model verified successfully")
+        torch.save(model.state_dict(), model_path)
+
+        # Save preprocess config
+        config_path = model_dir / "preprocess_config.json"
+        import json
+        with open(config_path, 'w') as f:
+            json.dump({"model": "ViT-B-32", "pretrained": "laion2b_s34b_b79k"}, f)
+
+        logger.info(f"✅ CLIP model saved to {model_path}")
         return True
-        
+
+    except ImportError:
+        logger.warning("open_clip not installed, trying transformers...")
+        return download_clip_transformers(model_dir)
     except Exception as e:
-        logger.error(f"CLIP model verification failed: {e}")
+        logger.error(f"❌ Failed to download CLIP model: {str(e)}")
         return False
 
-def create_model_info():
-    """Create model information file"""
-    models_dir = Path("/app/models")
-    info_file = models_dir / "model_info.txt"
-    
-    info_content = """ToyResaleWizard ML Models
+def download_clip_transformers(model_dir: Path):
+    """Download CLIP using transformers"""
+    try:
+        from transformers import CLIPModel, CLIPProcessor
+        logger.info("Downloading CLIP ViT-B/32 using transformers...")
 
-Downloaded Models:
-- YOLOv8n: Object detection model for toy identification
-- CLIP ViT-B/32: Vision-language model for classification
+        # Load model and processor
+        model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32")
+        processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
-Model Sources:
-- YOLOv8: https://github.com/ultralytics/ultralytics
-- CLIP: https://github.com/openai/CLIP
+        # Save model
+        model_path = model_dir / "clip_vit_b_32"
+        model.save_pretrained(model_path)
+        processor.save_pretrained(model_path)
 
-Usage:
-- YOLO models are loaded from ./models/yolov8n.pt
-- CLIP models are downloaded automatically by the library
-"""
-    
-    with open(info_file, 'w') as f:
-        f.write(info_content)
-    
-    logger.info(f"Created model info file at {info_file}")
+        logger.info(f"✅ CLIP model saved to {model_path}")
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ Failed to download CLIP model with transformers: {str(e)}")
+        return False
 
 def main():
-    """Main function to download all required models"""
-    logger.info("Starting model download process...")
-    
-    success = True
-    
-    # Download YOLOv8 model
-    if not download_yolo_model():
-        success = False
-    
-    # Verify CLIP model
-    if not verify_clip_model():
-        success = False
-    
-    # Create model info
-    create_model_info()
-    
-    if success:
-        logger.info("All models downloaded and verified successfully!")
+    """Main download function"""
+    logger.info("🚀 Starting ML model download process...")
+
+    # Create models directory
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+
+    success_count = 0
+
+    # Download YOLOv8
+    logger.info("📥 Downloading YOLOv8 model...")
+    yolo_dir = create_versioned_dir(YOLO_MODEL_NAME)
+    if download_yolo_model(yolo_dir):
+        success_count += 1
+    else:
+        logger.error("Failed to download YOLOv8 model")
+
+    # Download CLIP
+    logger.info("📥 Downloading CLIP model...")
+    clip_dir = create_versioned_dir("clip_vit_b_32")
+    if download_clip_model(clip_dir):
+        success_count += 1
+    else:
+        logger.error("Failed to download CLIP model")
+
+    if success_count == 2:
+        logger.info("🎉 All models downloaded successfully!")
+        logger.info(f"📁 Models saved in {MODELS_DIR}")
         return 0
     else:
-        logger.error("Some models failed to download or verify")
+        logger.error(f"💥 Download failed for {2 - success_count} model(s)")
         return 1
 
 if __name__ == "__main__":
-    sys.exit(main())
+    exit_code = main()
+    exit(exit_code)
