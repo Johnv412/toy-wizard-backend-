@@ -1267,3 +1267,16 @@ WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind 
 2025-09-09 18:10:38,168 - __main__ - INFO - ✅ Redis connection: OK
 2025-09-09 18:10:38,168 - __main__ - INFO - ✅ Basic operations: OK
 2025-09-09 18:10:38,168 - __main__ - INFO - ✅ Caching functionality: OK
+2025-09-09 18:11:54,869 - __main__ - INFO - 🔍 Starting Redis connection and caching verification...
+2025-09-09 18:11:54,876 - __main__ - INFO - ✅ Redis connection successful
+2025-09-09 18:11:54,876 - __main__ - INFO - ✅ Redis SET operation successful
+2025-09-09 18:11:54,877 - __main__ - INFO - ✅ Redis GET operation successful
+2025-09-09 18:11:56,878 - __main__ - INFO - ✅ Redis TTL working (expires in 58s)
+2025-09-09 18:11:56,881 - __main__ - INFO - ✅ Redis cache SET with JSON successful
+2025-09-09 18:11:56,881 - __main__ - INFO - ✅ Redis cache GET and JSON parsing successful
+2025-09-09 18:11:56,882 - __main__ - INFO - ✅ Redis key pattern matching successful
+2025-09-09 18:11:56,883 - __main__ - INFO - ✅ Test data cleanup successful
+2025-09-09 18:11:56,883 - __main__ - INFO - 🎉 Redis setup verification completed successfully!
+2025-09-09 18:11:56,883 - __main__ - INFO - ✅ Redis connection: OK
+2025-09-09 18:11:56,883 - __main__ - INFO - ✅ Basic operations: OK
+2025-09-09 18:11:56,883 - __main__ - INFO - ✅ Caching functionality: OK
