@@ -1226,3 +1226,18 @@ WHERE pg_catalog.pg_class.relname = $1::VARCHAR AND pg_catalog.pg_class.relkind 
 2025-09-09 18:03:49,807 - __main__ - INFO - ✅ Table 'ml_model_metrics' exists
 2025-09-09 18:03:49,807 - __main__ - INFO - ✅ All expected tables are present
 2025-09-09 18:03:49,808 - __main__ - INFO - 🎉 PostgreSQL setup verification completed successfully!
+2025-09-09 18:08:34,138 - __main__ - INFO - 🔍 Starting PostgreSQL database verification...
+2025-09-09 18:08:34,248 - __main__ - INFO - ✅ Database connection successful
+2025-09-09 18:08:34,279 - __main__ - INFO - Found 4 tables in database
+2025-09-09 18:08:34,279 - __main__ - INFO - ✅ Table 'toy_analyses' exists
+2025-09-09 18:08:34,279 - __main__ - INFO - ✅ Table 'price_history' exists
+2025-09-09 18:08:34,279 - __main__ - INFO - ✅ Table 'user_sessions' exists
+2025-09-09 18:08:34,280 - __main__ - INFO - ✅ Table 'ml_model_metrics' exists
+2025-09-09 18:08:34,280 - __main__ - INFO - ✅ All expected tables are present
+2025-09-09 18:08:34,280 - __main__ - INFO - 🎉 PostgreSQL setup verification completed successfully!
+2025-09-09 18:09:24,680 - __main__ - INFO - 🔍 Starting Redis connection and caching verification...
+2025-09-09 18:09:24,694 - __main__ - ERROR - ❌ Redis connection failed: AUTH <password> called without any password configured for the default user. Are you sure your configuration is correct?
+2025-09-09 18:09:24,694 - __main__ - ERROR - 💥 Redis verification failed - connection issues
+2025-09-09 18:09:25,582 - __main__ - INFO - 🔍 Starting Redis connection and caching verification...
+2025-09-09 18:09:25,587 - __main__ - ERROR - ❌ Redis connection failed: AUTH <password> called without any password configured for the default user. Are you sure your configuration is correct?
+2025-09-09 18:09:25,588 - __main__ - ERROR - 💥 Redis verification failed - connection issues
