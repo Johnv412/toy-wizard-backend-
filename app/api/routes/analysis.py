@@ -2,7 +2,7 @@
 Analysis API routes for toy identification and evaluation
 """
 
-from fastapi import APIRouter, File, UploadFile, HTTPException, Depends, BackgroundTasks, Path
+from fastapi import APIRouter, File, UploadFile, HTTPException, Depends, BackgroundTasks, Path, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -536,3 +536,44 @@ async def get_cache_status():
     except Exception as e:
         logger.error(f"Error getting cache status: {e}")
         raise HTTPException(status_code=500, detail="Failed to get cache status")
+
+@router.websocket("/analyze-toy-ws")
+async def analyze_toy_websocket(
+    websocket: WebSocket,
+    ml_service: MLService = Depends(get_ml_service),
+    pricing_service: PricingService = Depends(get_pricing_service),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Real-time toy analysis via WebSocket
+    """
+    await websocket.accept()
+    
+    try:
+        # Receive image data from client
+        data = await websocket.receive_json()
+        image_base64 = data.get("image_base64")
+        
+        if not image_base64:
+            await websocket.send_json({"error": "No image data provided"})
+            return
+        
+        # Send status update
+        await websocket.send_json({"status": "Analyzing toy image..."})
+        
+        # Perform AI analysis
+        analysis_result = await ai_service.analyze_toy_image(image_base64)
+        
+        # Send analysis results
+        await websocket.send_json({
+            "status": "Analysis complete",
+            "result": analysis_result
+        })
+        
+    except WebSocketDisconnect:
+        logger.info("WebSocket disconnected")
+    except Exception as e:
+        logger.error(f"WebSocket analysis error: {e}")
+        await websocket.send_json({"error": str(e)})
+    finally:
+        await websocket.close()

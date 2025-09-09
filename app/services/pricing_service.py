@@ -221,29 +221,52 @@ class OptimizedPricingService:
                 del self.memory_cache[old_key]
 
     async def _get_from_redis_cache(self, key: str) -> Optional[Dict]:
-        """Get from L2 Redis cache"""
+        """Get data from Redis cache"""
         try:
             if not self.redis_client:
                 return None
-                
+            
             cached_data = await self.redis_client.get(key)
             if cached_data:
+                import json
                 return json.loads(cached_data)
+            return None
         except Exception as e:
-            logger.warning(f"Redis cache error: {e}")
-        return None
-
-    async def _set_redis_cache(self, key: str, data: Dict):
-        """Set L2 Redis cache"""
+            logger.error(f"Redis cache get error: {e}")
+            return None
+    
+    async def _set_redis_cache(self, key: str, data: Dict, ttl: int = 3600):
+        """Set data in Redis cache with TTL"""
         try:
-            if self.redis_client:
-                await self.redis_client.setex(
-                    key, 
-                    self.redis_cache_ttl, 
-                    json.dumps(data, default=str)
-                )
+            if not self.redis_client:
+                return
+            
+            import json
+            await self.redis_client.setex(key, ttl, json.dumps(data))
         except Exception as e:
-            logger.warning(f"Redis cache set error: {e}")
+            logger.error(f"Redis cache set error: {e}")
+    
+    async def get_cached_price(self, toy_id: str) -> Optional[float]:
+        """Get cached price from Redis"""
+        try:
+            if not self.redis_client:
+                return None
+            
+            cached_price = await self.redis_client.get(f"price:{toy_id}")
+            return float(cached_price) if cached_price else None
+        except Exception as e:
+            logger.error(f"Error getting cached price: {e}")
+            return None
+    
+    async def cache_price(self, toy_id: str, price: float, ttl: int = 3600):
+        """Cache price in Redis"""
+        try:
+            if not self.redis_client:
+                return
+            
+            await self.redis_client.setex(f"price:{toy_id}", ttl, str(price))
+        except Exception as e:
+            logger.error(f"Error caching price: {e}")
 
     async def _get_from_db_cache(self, key: str) -> Optional[Dict]:
         """Get from L3 database cache"""
